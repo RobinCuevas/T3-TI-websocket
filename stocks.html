@@ -5,34 +5,24 @@
 
 <script src="https://www.gstatic.com/charts/loader.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 
 <body>
     <body><a href="index.html" class="button"><button type="button">Desconectarse</button></a></body>
-    <div id="container0" style="width: 900px; height: 500px"></div>
-    <div id="div0" style="width: 900px; height: 100px"></div>
-    <div id="div_vol0" style="width: 900px; height: 100px"></div>
-    <div id="container1" style="width: 900px; height: 500px"></div>
-    <div id="div1" style="width: 900px; height: 100px"></div>
-    <div id="div_vol1" style="width: 900px; height: 100px"></div>
-    <div id="container2" style="width: 900px; height: 500px"></div>
-    <div id="div2" style="width: 900px; height: 100px"></div>
-    <div id="div_vol2" style="width: 900px; height: 100px"></div>
-    <div id="container3" style="width: 900px; height: 500px"></div>
-    <div id="div3" style="width: 900px; height: 100px"></div>
-    <div id="div_vol3" style="width: 900px; height: 100px"></div>
-    <div id="container4" style="width: 900px; height: 500px"></div>
-    <div id="div4" style="width: 900px; height: 100px"></div>
-    <div id="div_vol4" style="width: 900px; height: 100px"></div>
+    <div id="charts" ></div>
+
     <script type = "text/javascript">
         var socket = io("wss://le-18262636.bitzonte.com",{path: '/stocks'}, {transports: 'websocket'});
         const stocks_list = []
 
         class Accion{
-            constructor(nombre,div,div_vol,container){
+            constructor(nombre,company_name, country, div,div_vol,container){
                 this.div = div;
                 this.div_vol = div_vol;
                 this.container = container;
                 this.nombre = nombre;
+                this.company_name = company_name;
+                this.country = country;
                 this.vol = 0;
                 this.max = 0;
                 this.min = Number(1000000);
@@ -45,13 +35,18 @@
         socket.emit('STOCKS');
 
         socket.on('STOCKS', (data) => {
+            q_divs = 0;
             for(var aux in data){
                 console.log(data);
                 let container = "container" + aux.toString();
                 let div = "div" + aux.toString();
                 let div_vol = "div_vol" + aux.toString();
-                const stock = new Accion(data[aux].ticker, div, div_vol, container);
+                const stock = new Accion(data[aux].ticker,data[aux].company_name, data[aux].country, div, div_vol, container);
                 stocks_list.push(stock);
+                q_divs += 1;
+                $('#charts').append($('<div/>', { id: container}))
+                $('#charts').append($('<div/>', { id: div}))
+                $('#charts').append($('<div/>', { id: div_vol}))
             }
         })
 
@@ -72,7 +67,7 @@
                     google.charts.load('current', {packages: ['corechart'], 'callback':StocksGraph});
                     google.charts.load('current', {packages: ['table'], 'callback':drawTable});
                     google.charts.setOnLoadCallback(function() {
-                        StocksGraph(stocks_list[s].nombre, stocks_list[s].list,stocks_list[s].container)
+                        StocksGraph(stocks_list[s].nombre,stocks_list[s].company_name,stocks_list[s].country, stocks_list[s].list,stocks_list[s].container)
                     });
                     google.charts.setOnLoadCallback(function() {
                         drawTable(stocks_list[s].max,stocks_list[s].min,stocks_list[s].price,stocks_list[s].variation,stocks_list[s].div)
@@ -146,7 +141,7 @@
             table.draw(data, {showRowNumber: false, width: '100%', height: '100%'});
         }
 
-        function StocksGraph(nombre,lista,container) {
+        function StocksGraph(nombre,company_name,country,lista,container) {
             if (lista === undefined){
                 return
             }
@@ -163,7 +158,8 @@
                 vAxis: {
                 title: 'Value (USD)'
                 },
-                backgroundColor: '#f1f8e9'
+                backgroundColor: '#f1f8e9',
+                title: 'Company name: ' +  company_name + '\n' + 'Country: ' + country,
             };
 
             var chart = new google.visualization.LineChart(document.getElementById(container));

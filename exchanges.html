@@ -6,12 +6,12 @@
 
 <script src="https://www.gstatic.com/charts/loader.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 
 <body>
     <body><a href="index.html" class="button"><button type="button">Desconectarse</button></a></body>
-    <div id="div0" style="width: 900px; height: 100px"></div>
-    <div id="container0" style="width: 900px; height: 500px"></div>
-    <div id="div1" style="width: 900px; height: 100px"></div>
+    <body><a href="market_share.html" class="button"><button type="button">Market Share</button></a></body>
+    <div id="charts" ></div>
 
     <script type = "text/javascript">
         var socket = io("wss://le-18262636.bitzonte.com",{path: '/stocks'}, {transports: 'websocket'});
@@ -67,6 +67,7 @@
                         ex.lista_acciones.push(stocks_list[s].nombre)
                     }
                 }
+                $('#charts').append($('<div/>', { id: div}))
                 contador += 1;
             }
         })
