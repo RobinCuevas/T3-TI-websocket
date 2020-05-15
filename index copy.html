@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+
+<head>
+    <title>Stock Market</title>
+
+<script src="https://www.gstatic.com/charts/loader.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+
+<body>
+    <body><a href="home.html" class="button"><button type="button">Salir</button></a></body>
+    <div id="container" style="width: 900px; height: 500px"></div>
+    <div id="table_div" style="width: 900px; height: 100px"></div>
+    <div id="container1" style="width: 900px; height: 500px"></div>
+    <div id="table_div1" style="width: 900px; height: 100px"></div>
+    <div id="container2" style="width: 900px; height: 500px"></div>
+    <div id="table_div2" style="width: 900px; height: 100px"></div>
+    <div id="container3" style="width: 900px; height: 500px"></div>
+    <div id="table_div3" style="width: 900px; height: 100px"></div>
+    <div id="container4" style="width: 900px; height: 500px"></div>
+    <div id="table_div4" style="width: 900px; height: 100px"></div>
+    <script type = "text/javascript">
+        var socket = io("wss://le-18262636.bitzonte.com",{path: '/stocks'}, {transports: 'websocket'});
+        const ibm_stock_list = []
+        const aapl_stock_list = []
+        const fb_stock_list = []
+        const twtr_stock_list = []
+        const snap_stock_list = []
+
+        var vol_ibm = 0;
+        var max_ibm = 0;
+        var min_ibm = Number(1000000);
+        var ibm_price = 0;
+        var ibm_variation = 0;
+        
+        var vol_aapl = 0;
+        var max_aapl = 0;
+        var min_aapl = Number(1000000);
+        var aapl_price = 0;
+        var aapl_variation = 0;
+
+        var vol_fb = 0;
+        var max_fb = 0;
+        var min_fb = Number(1000000);
+        var fb_price = 0;
+        var fb_variation = 0;
+
+        var vol_twtr = 0;
+        var max_twtr = 0;
+        var min_twtr = Number(1000000);
+        var twtr_price = 0;
+        var twtr_variation = 0;
+
+        var vol_snap = 0;
+        var max_snap = 0;
+        var min_snap = Number(1000000);
+        var snap_price = 0;
+        var snap_variation = 0;
+
+        
+        socket.on('UPDATE', (data) => {
+            if (data.ticker === "IBM"){
+                console.log(data);
+                var fecha = new Date(data.time);
+                console.log(fecha);
+                ibm_stock_list.push([fecha,data.value]);
+                if (data.value > max_ibm){
+                    max_ibm = data.value
+                }
+                if (data.value < min_ibm){
+                    min_ibm = data.value
+                }
+                ibm_variation = ((data.value-ibm_price)/ibm_price)*100
+                ibm_price = data.value;
+                // Google graph
+                google.charts.load('current', {packages: ['corechart'], 'callback':StocksGraphIBM});
+                google.charts.load('current', {packages: ['table'], 'callback':drawTableIBM});
+                google.charts.setOnLoadCallback(function() {
+                    StocksGraphIBM(ibm_stock_list)
+                });
+                google.charts.setOnLoadCallback(drawTableIBM);
+            }
+            else if (data.ticker === "AAPL"){
+                console.log(data);
+                var fecha = new Date(data.time);
+                console.log(fecha);
+                aapl_stock_list.push([fecha,data.value]);
+                if (data.value > max_aapl){
+                    max_aapl = data.value
+                }
+                if (data.value < min_aapl){
+                    min_aapl = data.value
+                }
+                aapl_variation = ((data.value-aapl_price)/aapl_price)*100
+                aapl_price = data.value;
+                // Google graph
+                google.charts.load('current', {packages: ['corechart'], 'callback':StocksGraphAAPL});
+                google.charts.load('current', {packages: ['table'], 'callback':drawTableAAPL});
+                google.charts.setOnLoadCallback(function() {
+                    StocksGraphAAPL(aapl_stock_list)
+                });
+                google.charts.setOnLoadCallback(drawTableAAPL);
+            }
+            else if (data.ticker === "FB"){
+                console.log(data);
+                var fecha = new Date(data.time);
+                console.log(fecha);
+                fb_stock_list.push([fecha,data.value]);
+                if (data.value > max_fb){
+                    max_fb = data.value
+                }
+                if (data.value < min_fb){
+                    min_fb = data.value
+                }
+                fb_variation = ((data.value-fb_price)/fb_price)*100
+                fb_price = data.value;
+                // Google graph
+                google.charts.load('current', {packages: ['corechart'], 'callback':StocksGraphFB});
+                google.charts.load('current', {packages: ['table'], 'callback':drawTableFB});
+                google.charts.setOnLoadCallback(function() {
+                    StocksGraphFB(fb_stock_list)
+                });
+                google.charts.setOnLoadCallback(drawTableFB);
+            }
+            else if (data.ticker === "TWTR"){
+                console.log(data);
+                var fecha = new Date(data.time);
+                console.log(fecha);
+                twtr_stock_list.push([fecha,data.value]);
+                if (data.value > max_twtr){
+                    max_twtr = data.value
+                }
+                if (data.value < min_twtr){
+                    min_twtr = data.value
+                }
+                twtr_variation = ((data.value-twtr_price)/twtr_price)*100
+                twtr_price = data.value;
+                // Google graph
+                google.charts.load('current', {packages: ['corechart'], 'callback':StocksGraphTWTR});
+                google.charts.load('current', {packages: ['table'], 'callback':drawTableTWTR});
+                google.charts.setOnLoadCallback(function() {
+                    StocksGraphTWTR(twtr_stock_list)
+                });
+                google.charts.setOnLoadCallback(drawTableTWTR);
+            }
+            else if (data.ticker === "SNAP"){
+                console.log(data);
+                var fecha = new Date(data.time);
+                console.log(fecha);
+                snap_stock_list.push([fecha,data.value]);
+                if (data.value > max_snap){
+                    max_snap = data.value
+                }
+                if (data.value < min_snap){
+                    min_snap = data.value
+                }
+                snap_variation = ((data.value-snap_price)/snap_price)*100
+                snap_price = data.value;
+                // Google graph
+                google.charts.load('current', {packages: ['corechart'], 'callback':StocksGraphSNAP});
+                google.charts.load('current', {packages: ['table'], 'callback':drawTableSNAP});
+                google.charts.setOnLoadCallback(function() {
+                    StocksGraphSNAP(snap_stock_list)
+                });
+                google.charts.setOnLoadCallback(drawTableSNAP);
+            }
+        })
+
+    // FUNCIONES GENERALES
+
+    function drawTable() {
+        var data = new google.visualization.DataTable();
+        data.addColumn('number', 'Volumen Total Tranzado');
+        data.addColumn('number', 'Alto Histórico');
+        data.addColumn('number', 'Bajo Histórico');
+        data.addColumn('number', 'Último Precio');
+        data.addColumn('number', 'Variación Porcentual');
+        data.addRows([
+          [vol_ibm,max_ibm,min_ibm,ibm_price,ibm_variation]
+        ]);
+
+
+        
+
+        var table = new google.visualization.Table(document.getElementById('table_div'));
+
+        table.draw(data, {showRowNumber: false, width: '100%', height: '100%'});
+      }
+
+    function StocksGraph(ibm_stock_list) {
+        if (ibm_stock_list == undefined){
+            return
+        }
+        var data = new google.visualization.DataTable();
+        data.addColumn('date', 'X');
+        data.addColumn('number', 'IBM Stock Price');
+
+        data.addRows(ibm_stock_list);
+
+        var options = {
+            hAxis: {
+            title: 'Time'
+            },
+            vAxis: {
+            title: 'Value (USD)'
+            },
+            backgroundColor: '#f1f8e9'
+        };
+
+        var chart = new google.visualization.LineChart(document.getElementById('container'));
+        chart.draw(data, options);
+        }
+
+    // IBM
+    function drawTableIBM() {
+        var data = new google.visualization.DataTable();
+        data.addColumn('number', 'Volumen Total Tranzado');
+        data.addColumn('number', 'Alto Histórico');
+        data.addColumn('number', 'Bajo Histórico');
+        data.addColumn('number', 'Último Precio');
+        data.addColumn('number', 'Variación Porcentual');
+        data.addRows([
+          [vol_ibm,max_ibm,min_ibm,ibm_price,ibm_variation]
+        ]);
+
+
+        
+
+        var table = new google.visualization.Table(document.getElementById('table_div'));
+
+        table.draw(data, {showRowNumber: false, width: '100%', height: '100%'});
+      }
+
+    function StocksGraphIBM(ibm_stock_list) {
+        if (ibm_stock_list == undefined){
+            return
+        }
+        var data = new google.visualization.DataTable();
+        data.addColumn('date', 'X');
+        data.addColumn('number', 'IBM Stock Price');
+
+        data.addRows(ibm_stock_list);
+
+        var options = {
+            hAxis: {
+            title: 'Time'
+            },
+            vAxis: {
+            title: 'Value (USD)'
+            },
+            backgroundColor: '#f1f8e9'
+        };
+
+        var chart = new google.visualization.LineChart(document.getElementById('container'));
+        chart.draw(data, options);
+        }
+
+    // AAPL
+    function drawTableAAPL() {
+        var data = new google.visualization.DataTable();
+        data.addColumn('number', 'Volumen Total Tranzado');
+        data.addColumn('number', 'Alto Histórico');
+        data.addColumn('number', 'Bajo Histórico');
+        data.addColumn('number', 'Último Precio');
+        data.addColumn('number', 'Variación Porcentual');
+        data.addRows([
+          [vol_aapl,max_aapl,min_aapl,aapl_price,aapl_variation]
+        ]);
+
+        var table = new google.visualization.Table(document.getElementById('table_div1'));
+
+        table.draw(data, {showRowNumber: false, width: '100%', height: '100%'});
+      }
+
+    function StocksGraphAAPL(aapl_stock_list) {
+        if (aapl_stock_list == undefined){
+            return
+        }
+        var data = new google.visualization.DataTable();
+        data.addColumn('date', 'X');
+        data.addColumn('number', 'AAPL Stock Price');
+        data.addRows(aapl_stock_list);
+
+
+        var options = {
+            hAxis: {
+            title: 'Time'
+            },
+            vAxis: {
+            title: 'Value (USD)'
+            },
+            backgroundColor: '#f1f8e9'
+        };
+
+        var chart = new google.visualization.LineChart(document.getElementById('container1'));
+        chart.draw(data, options);
+        }
+
+    // FB
+    function drawTableFB() {
+        var data = new google.visualization.DataTable();
+        data.addColumn('number', 'Volumen Total Tranzado');
+        data.addColumn('number', 'Alto Histórico');
+        data.addColumn('number', 'Bajo Histórico');
+        data.addColumn('number', 'Último Precio');
+        data.addColumn('number', 'Variación Porcentual');
+        data.addRows([
+          [vol_fb,max_fb,min_fb,fb_price,fb_variation]
+        ]);
+        var table = new google.visualization.Table(document.getElementById('table_div2'));
+        table.draw(data, {showRowNumber: false, width: '100%', height: '100%'});
+      }
+
+    function StocksGraphFB(fb_stock_list) {
+        if (fb_stock_list == undefined){
+            return
+        }
+        var data = new google.visualization.DataTable();
+        data.addColumn('date', 'X');
+        data.addColumn('number', 'FB Stock Price');
+        data.addRows(fb_stock_list);
+        var options = {
+            hAxis: {
+            title: 'Time'
+            },
+            vAxis: {
+            title: 'Value (USD)'
+            },
+            backgroundColor: '#f1f8e9'
+        };
+        var chart = new google.visualization.LineChart(document.getElementById('container2'));
+        chart.draw(data, options);
+        }
+
+    // TWTR
+    function drawTableTWTR() {
+        var data = new google.visualization.DataTable();
+        data.addColumn('number', 'Volumen Total Tranzado');
+        data.addColumn('number', 'Alto Histórico');
+        data.addColumn('number', 'Bajo Histórico');
+        data.addColumn('number', 'Último Precio');
+        data.addColumn('number', 'Variación Porcentual');
+        data.addRows([
+          [vol_twtr,max_twtr,min_twtr,twtr_price,twtr_variation]
+        ]);
+        var table = new google.visualization.Table(document.getElementById('table_div3'));
+        table.draw(data, {showRowNumber: false, width: '100%', height: '100%'});
+      }
+
+    function StocksGraphTWTR(twtr_stock_list) {
+        if (twtr_stock_list == undefined){
+            return
+        }
+        var data = new google.visualization.DataTable();
+        data.addColumn('date', 'X');
+        data.addColumn('number', 'TWTR Stock Price');
+        data.addRows(twtr_stock_list);
+
+
+        var options = {
+            hAxis: {
+            title: 'Time'
+            },
+            vAxis: {
+            title: 'Value (USD)'
+            },
+            backgroundColor: '#f1f8e9'
+        };
+
+        var chart = new google.visualization.LineChart(document.getElementById('container3'));
+        chart.draw(data, options);
+        }
+
+    // SNAP
+    function drawTableSNAP() {
+        var data = new google.visualization.DataTable();
+        data.addColumn('number', 'Volumen Total Tranzado');
+        data.addColumn('number', 'Alto Histórico');
+        data.addColumn('number', 'Bajo Histórico');
+        data.addColumn('number', 'Último Precio');
+        data.addColumn('number', 'Variación Porcentual');
+        data.addRows([
+          [vol_snap,max_snap,min_snap,snap_price,snap_variation]
+        ]);
+        var table = new google.visualization.Table(document.getElementById('table_div4'));
+        table.draw(data, {showRowNumber: false, width: '100%', height: '100%'});
+      }
+
+    function StocksGraphSNAP(snap_stock_list) {
+        if (snap_stock_list == undefined){
+            return
+        }
+        var data = new google.visualization.DataTable();
+        data.addColumn('date', 'X');
+        data.addColumn('number', 'SNAP Stock Price');
+        data.addRows(snap_stock_list);
+
+        var options = {
+            hAxis: {
+            title: 'Time'
+            },
+            vAxis: {
+            title: 'Value (USD)'
+            },
+            backgroundColor: '#f1f8e9'
+        };
+
+        var chart = new google.visualization.LineChart(document.getElementById('container4'));
+        chart.draw(data, options);
+        }        
+    </script>
+</body>

@@ -1,0 +1,145 @@
+
+<!DOCTYPE html>
+
+<head>
+    <title>Exchange Market</title>
+
+<script src="https://www.gstatic.com/charts/loader.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+
+<body>
+    <body><a href="home.html" class="button"><button type="button">Desconectarse</button></a></body>
+    <div id="div0" style="width: 900px; height: 100px"></div>
+    <div id="container0" style="width: 900px; height: 500px"></div>
+    <div id="div1" style="width: 900px; height: 100px"></div>
+
+    <script type = "text/javascript">
+        var socket = io("wss://le-18262636.bitzonte.com",{path: '/stocks'}, {transports: 'websocket'});
+        const ex_list = [];
+        const stocks_list = [];
+
+        class Exchange{
+            constructor(nombre,div,listed_companies){
+                this.div = div;
+                this.nombre = nombre;
+                this.vol_buy = 0;
+                this.vol_sell = 0;
+                this.list = []; 
+                this.lista_acciones = [];  // tickers
+                this.n_acciones = 0;
+                this.listed_companies = listed_companies; // nombres
+            }
+        }
+
+        class Accion{
+            constructor(nombre,company_name){
+                this.nombre = nombre;
+                this.company_name = company_name;
+                this.vol_buy = 0;
+                this.vol_sell = 0;
+                this.vol_total = 0;
+                this.list = []; 
+            }
+        }
+
+        socket.emit('STOCKS');
+
+        socket.on('STOCKS', (data) => {
+            for(var aux in data){
+                const stock = new Accion(data[aux].ticker, data[aux].company_name);
+                stocks_list.push(stock);
+            }
+        })
+
+        socket.emit('EXCHANGES');
+
+        socket.on('EXCHANGES', (data) => {
+            var contador = 0;
+            for(var aux in data){
+                // aux es la key (NASDAQ)
+                console.log(contador);
+                let div = "div" + contador.toString();
+                const ex = new Exchange(aux, div, data[aux].listed_companies);
+                ex_list.push(ex);
+                for(var s in stocks_list){
+                    if(ex.listed_companies.includes(stocks_list[s].company_name)){
+                        ex.n_acciones += 1;
+                        ex.lista_acciones.push(stocks_list[s].nombre)
+                    }
+                }
+                contador += 1;
+            }
+        })
+
+        socket.on('BUY', (data) => {
+            for(var aux in ex_list){
+                if(ex_list[aux].lista_acciones.includes(data.ticker)){
+                    console.log("este es el mercado:")
+                    console.log(ex_list[aux]);
+                    ex_list[aux].vol_buy += data.volume;
+                    var fecha = new Date(data.time);
+                    ex_list[aux].list.push([fecha,ex_list[aux].vol_buy,ex_list[aux].vol_sell, ex_list[aux].vol_buy + ex_list[aux].vol_sell])
+                    google.charts.load('current', {packages: ['line']});
+                    google.charts.setOnLoadCallback(function() {
+                        drawChart(ex_list[aux].list, ex_list[aux].n_acciones ,ex_list[aux].div, ex_list[aux].nombre)
+                    });
+                    break;
+                }
+            }
+            }
+        )
+
+        socket.on('SELL', (data) => {
+            for(var aux in ex_list){
+                if(ex_list[aux].lista_acciones.includes(data.ticker)){
+                    console.log("este es el mercado:")
+                    console.log(ex_list[aux]);
+                    ex_list[aux].vol_sell += data.volume;
+                    var fecha = new Date(data.time);
+                    ex_list[aux].list.push([fecha,ex_list[aux].vol_buy,ex_list[aux].vol_sell, ex_list[aux].vol_buy + ex_list[aux].vol_sell])
+                    google.charts.load('current', {packages: ['line']});
+                    google.charts.setOnLoadCallback(function() {
+                        drawChart(ex_list[aux].list, ex_list[aux].n_acciones ,ex_list[aux].div, ex_list[aux].nombre)
+                    });
+                    break;
+                }
+            }
+            }
+        )
+
+        function drawChart(lista,n_acciones,div, name) {
+            if(lista === undefined){
+                return
+            }
+            if(n_acciones === undefined){
+                return
+            }
+            if(div === undefined){
+                return
+            }
+            if(name === undefined){
+                return
+            }
+            var data = new google.visualization.DataTable();
+            data.addColumn('date', 'Time');
+            data.addColumn('number', 'Volumen Compra');
+            data.addColumn('number', 'Volumen Venta');
+            data.addColumn('number', 'Volumen Total');
+            data.addRows(lista);
+
+            var options = {
+            chart: {
+                title: 'Exchange Market:' + name,
+                subtitle: 'Stocks Quantity: ' + n_acciones,
+            },
+            width: 900,
+            height: 500
+            };
+
+            var chart = new google.charts.Line(document.getElementById(div));
+
+            chart.draw(data, google.charts.Line.convertOptions(options));
+            }
+
+    </script>
+</body>

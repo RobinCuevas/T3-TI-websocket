@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+
+<head>
+    <title>Stock Market</title>
+
+<script src="https://www.gstatic.com/charts/loader.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+
+<body>
+    <body><a href="home.html" class="button"><button type="button">Desconectarse</button></a></body>
+    <div id="container0" style="width: 900px; height: 500px"></div>
+    <div id="div0" style="width: 900px; height: 100px"></div>
+    <div id="div_vol0" style="width: 900px; height: 100px"></div>
+    <div id="container1" style="width: 900px; height: 500px"></div>
+    <div id="div1" style="width: 900px; height: 100px"></div>
+    <div id="div_vol1" style="width: 900px; height: 100px"></div>
+    <div id="container2" style="width: 900px; height: 500px"></div>
+    <div id="div2" style="width: 900px; height: 100px"></div>
+    <div id="div_vol2" style="width: 900px; height: 100px"></div>
+    <div id="container3" style="width: 900px; height: 500px"></div>
+    <div id="div3" style="width: 900px; height: 100px"></div>
+    <div id="div_vol3" style="width: 900px; height: 100px"></div>
+    <div id="container4" style="width: 900px; height: 500px"></div>
+    <div id="div4" style="width: 900px; height: 100px"></div>
+    <div id="div_vol4" style="width: 900px; height: 100px"></div>
+    <script type = "text/javascript">
+        var socket = io("wss://le-18262636.bitzonte.com",{path: '/stocks'}, {transports: 'websocket'});
+        const stocks_list = []
+
+        class Accion{
+            constructor(nombre,div,div_vol,container){
+                this.div = div;
+                this.div_vol = div_vol;
+                this.container = container;
+                this.nombre = nombre;
+                this.vol = 0;
+                this.max = 0;
+                this.min = Number(1000000);
+                this.price = 0;
+                this.variation = 0;
+                this.list = []; 
+            }
+        }
+
+        socket.emit('STOCKS');
+
+        socket.on('STOCKS', (data) => {
+            for(var aux in data){
+                console.log(data);
+                let container = "container" + aux.toString();
+                let div = "div" + aux.toString();
+                let div_vol = "div_vol" + aux.toString();
+                const stock = new Accion(data[aux].ticker, div, div_vol, container);
+                stocks_list.push(stock);
+            }
+        })
+
+        socket.on('UPDATE', (data) => {
+            for(var s in stocks_list){
+                if(data.ticker === stocks_list[s].nombre){
+                    console.log(data);
+                    var fecha = new Date(data.time);
+                    stocks_list[s].list.push([fecha,data.value]);
+                    if (data.value > stocks_list[s].max){
+                        stocks_list[s].max = data.value
+                    }
+                    if (data.value < stocks_list[s].min){
+                        stocks_list[s].min = data.value
+                    }
+                    stocks_list[s].variation = ((data.value-stocks_list[s].price)/stocks_list[s].price)*100
+                    stocks_list[s].price = data.value;
+                    google.charts.load('current', {packages: ['corechart'], 'callback':StocksGraph});
+                    google.charts.load('current', {packages: ['table'], 'callback':drawTable});
+                    google.charts.setOnLoadCallback(function() {
+                        StocksGraph(stocks_list[s].nombre, stocks_list[s].list,stocks_list[s].container)
+                    });
+                    google.charts.setOnLoadCallback(function() {
+                        drawTable(stocks_list[s].max,stocks_list[s].min,stocks_list[s].price,stocks_list[s].variation,stocks_list[s].div)
+                    });
+                    break;
+                }
+            }
+        })
+
+        socket.on('BUY', (data) => {
+            for(var s in stocks_list){
+                if(data.ticker === stocks_list[s].nombre){
+                    stocks_list[s].vol += data.volume;
+                    google.charts.load('current', {packages: ['table'], 'callback':drawTable1});
+                    google.charts.setOnLoadCallback(function() {
+                        drawTable1(stocks_list[s].nombre,stocks_list[s].vol,stocks_list[s].div_vol)
+                    });
+                    break;
+                }
+            }
+            }
+        )
+
+        socket.on('SELL', (data) => {
+            for(var s in stocks_list){
+                if(data.ticker === stocks_list[s].nombre){
+                    stocks_list[s].vol += data.volume;
+                    google.charts.load('current', {packages: ['table'], 'callback':drawTable1});
+                    google.charts.setOnLoadCallback(function() {
+                        drawTable1(stocks_list[s].nombre,stocks_list[s].vol,stocks_list[s].div_vol)
+                    });
+                    break;
+                }
+            }
+            }
+        )
+
+        // FUNCIONES GENERALES
+
+        function drawTable(max,min,price,variation,divi) {
+            if (divi === undefined){
+                return
+            }
+            var data = new google.visualization.DataTable();
+            data.addColumn('number', 'Alto Histórico');
+            data.addColumn('number', 'Bajo Histórico');
+            data.addColumn('number', 'Último Precio');
+            data.addColumn('number', 'Variación Porcentual');
+            data.addRows([
+            [max,min,price,variation]
+            ]);      
+
+            var table = new google.visualization.Table(document.getElementById(divi));
+
+            table.draw(data, {showRowNumber: false, width: '100%', height: '100%'});
+        }
+
+        function drawTable1(name,vol,divi) {
+            if (divi === undefined){
+                return
+            }
+            var data = new google.visualization.DataTable();
+            data.addColumn('string', '');
+            data.addColumn('number', '');
+            data.addRows([
+            ["Volumen Total Transado",vol]
+            ]);      
+
+            var table = new google.visualization.Table(document.getElementById(divi));
+
+            table.draw(data, {showRowNumber: false, width: '100%', height: '100%'});
+        }
+
+        function StocksGraph(nombre,lista,container) {
+            if (lista === undefined){
+                return
+            }
+            var data = new google.visualization.DataTable();
+            data.addColumn('date', 'X');
+            data.addColumn('number', nombre);
+
+            data.addRows(lista);
+
+            var options = {
+                hAxis: {
+                title: 'Time'
+                },
+                vAxis: {
+                title: 'Value (USD)'
+                },
+                backgroundColor: '#f1f8e9'
+            };
+
+            var chart = new google.visualization.LineChart(document.getElementById(container));
+            chart.draw(data, options);
+            }
+    </script>
+</body>
