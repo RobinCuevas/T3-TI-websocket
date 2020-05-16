@@ -8,7 +8,7 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 
 <body>
-    <body><a href="index.html" class="button" ><button type="button">Desconectarse</button></a></body>
+    <body><a href="index.html" class="button" ><button type="button" style="background-color:red;border-color: red;"><strong>Desconectarse</strong></button></a></body>
     <div id="charts" ></div>
 
     <script type = "text/javascript">
@@ -45,8 +45,9 @@
                 stocks_list.push(stock);
                 q_divs += 1;
                 $('#charts').append($('<div/>', { id: container}))
-                $('#charts').append($('<div/>', { id: div}))
-                $('#charts').append($('<div/>', { id: div_vol}))
+                $('#charts').append($('<div/>', { id: div}));
+                $('#charts').append($('<div/>', { id: div_vol}));
+                
             }
         })
 
