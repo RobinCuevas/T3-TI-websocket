@@ -8,7 +8,7 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 
 <body>
-    <body><a href="index.html" class="button"><button type="button">Desconectarse</button></a></body>
+    <body><a href="index.html" class="button" ><button type="button">Desconectarse</button></a></body>
     <div id="charts" ></div>
 
     <script type = "text/javascript">
@@ -159,7 +159,7 @@
                 title: 'Value (USD)'
                 },
                 backgroundColor: '#f1f8e9',
-                title: 'Company name: ' +  company_name + '\n' + 'Country: ' + country,
+                title: 'Company name: ' +  company_name + "("+nombre+")"+ '\n' + 'Country: ' + country,
             };
 
             var chart = new google.visualization.LineChart(document.getElementById(container));

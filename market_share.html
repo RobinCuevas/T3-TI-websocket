@@ -14,9 +14,11 @@
     <script type = "text/javascript">
         var socket = io("wss://le-18262636.bitzonte.com",{path: '/stocks'}, {transports: 'websocket'});
         class Exchange{
-            constructor(nombre,div,listed_companies){
+            constructor(nombre,nombre_mercado,div,listed_companies,country){
                 this.div = div;
                 this.nombre = nombre;
+                this.nombre_mercado = nombre_mercado;
+                this.country = country;
                 this.vol_buy = 0;
                 this.vol_sell = 0;
                 this.list = []; 
@@ -57,9 +59,8 @@
                 var contador = 0;
                 for(var aux in data){
                     // aux es la key (NASDAQ)
-                    console.log(aux);
                     let div = "div" + contador.toString();
-                    const ex = new Exchange(aux, div, data[aux].listed_companies);
+                    const ex = new Exchange(aux,data[aux].name, div, data[aux].listed_companies,data[aux].country);
                     ex_list.push(ex);
                     for(var s in stocks_list){
                         if(ex.listed_companies.includes(stocks_list[s].company_name)){
@@ -76,13 +77,12 @@
                 let lista_tabla = [];
                 for(var aux in ex_list){
                     if(ex_list[aux].lista_acciones.includes(data.ticker)){
-                        console.log(ex_list[aux]);
                         ex_list[aux].vol_buy += data.volume;
                         ex_list[aux].vol_total = ex_list[aux].vol_buy + ex_list[aux].vol_sell;
                         var fecha = new Date(data.time);
                         for (var num in ex_list){
-                            lista.push([ex_list[num].nombre, ex_list[num].n_acciones ,ex_list[num].vol_buy + ex_list[num].vol_sell]);
-                            lista_tabla.push([ex_list[num].nombre,ex_list[num].vol_buy,ex_list[num].vol_sell,ex_list[num].vol_total])
+                            lista.push([ex_list[num].nombre,ex_list[num].vol_buy + ex_list[num].vol_sell]);
+                            lista_tabla.push([ex_list[num].nombre, ex_list[num].nombre_mercado, ex_list[num].country, ex_list[num].n_acciones , ex_list[num].vol_buy,ex_list[num].vol_sell,ex_list[num].vol_total])
                         }
                         google.charts.load('current', {packages: ['corechart']});
                         google.charts.setOnLoadCallback(function() {
@@ -104,10 +104,11 @@
                 for(var aux in ex_list){
                     if(ex_list[aux].lista_acciones.includes(data.ticker)){
                         ex_list[aux].vol_sell += data.volume;
+                        ex_list[aux].vol_total = ex_list[aux].vol_buy + ex_list[aux].vol_sell;
                         var fecha = new Date(data.time);
                         for (var num in ex_list){
                             lista.push([ex_list[num].nombre, ex_list[num].vol_buy + ex_list[num].vol_sell])
-                            lista_tabla.push([ex_list[num].nombre,ex_list[num].n_acciones,ex_list[num].vol_buy,ex_list[num].vol_sell,ex_list[num].vol_total])
+                            lista_tabla.push([ex_list[num].nombre,ex_list[num].nombre_mercado, ex_list[num].country, ex_list[num].n_acciones,ex_list[num].vol_buy,ex_list[num].vol_sell,ex_list[num].vol_total])
                         }
                         google.charts.load('current', {packages: ['corechart']});
                         google.charts.setOnLoadCallback(function() {
@@ -133,8 +134,6 @@
             if (lista === undefined) {
                 return;
             }
-            console.log("entra al chart");
-            console.log(lista);
             var data = google.visualization.arrayToDataTable(lista)
             var options = {
                 title: 'Market Share',
@@ -149,7 +148,9 @@
                 return
             }
             var data = new google.visualization.DataTable();
-            data.addColumn('string', 'Name');
+            data.addColumn('string', 'Ticker');
+            data.addColumn('string', 'Market Name')
+            data.addColumn('string', 'Country')
             data.addColumn('number', 'Cantidad de acciones');
             data.addColumn('number', 'Volumen de Compra');
             data.addColumn('number', 'Volumen de Venta');
